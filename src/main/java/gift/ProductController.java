@@ -1,6 +1,7 @@
 package gift;
 
 import org.springframework.dao.DataAccessException;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -42,15 +43,16 @@ public class ProductController {
      * @return 상품 목록 페이지로 리다이렉션
      */
     @PostMapping("/add")
-    public String addProduct(@RequestParam("id") Long id,
-                             @RequestParam("name") String name,
-                             @RequestParam("price") Long price,
-                             @RequestParam("imageUrl") String imageUrl) {
+    public ResponseEntity<String> addProduct(@RequestParam("id") Long id,
+                                             @RequestParam("name") String name,
+                                             @RequestParam("price") Long price,
+                                             @RequestParam("imageUrl") String imageUrl) {
         try {
             productDao.insertNewProduct(new Product(id, name, price, imageUrl));
         } catch(DataAccessException e) {
+            return ResponseEntity.badRequest().body("이미 존재하는 id입니다.");
         }
-        return "redirect:/api/products";
+        return ResponseEntity.ok("/api/products");
     }
 
     /**
@@ -69,16 +71,17 @@ public class ProductController {
      * 수정된 상품 정보를 받아서 데이터를 갱신
      * @return 상품 목록 페이지로 리다이렉션
      */
-    @PostMapping("/edit")
-    public String editProduct(@RequestParam("id") Long id,
-                              @RequestParam("name") String name,
-                              @RequestParam("price") Long price,
-                              @RequestParam("imageUrl") String imageUrl) {
+    @PutMapping("/edit")
+    public ResponseEntity<String> editProduct(@RequestParam("id") Long id,
+                                              @RequestParam("name") String name,
+                                              @RequestParam("price") Long price,
+                                              @RequestParam("imageUrl") String imageUrl) {
         try {
             productDao.updateProduct(new Product(id, name, price, imageUrl));
         } catch(DataAccessException e) {
+            return ResponseEntity.badRequest().body("잘못된 요청입니다.");
         }
-        return "redirect:/api/products";
+        return ResponseEntity.ok("/api/products");
     }
 
     /**
@@ -86,12 +89,13 @@ public class ProductController {
      * @param id 삭제할 상품의 id
      * @return 상품 목록 페이지로 리다이렉션
      */
-    @PostMapping("/{id}")
-    public String deleteProduct(@PathVariable(name = "id") Long id) {
+    @DeleteMapping(value = "/{id}")
+    public ResponseEntity<String> deleteProduct(@PathVariable(name = "id") Long id) {
         try {
             productDao.deleteProduct(id);
         } catch(DataAccessException e) {
+            return ResponseEntity.badRequest().body("잘못된 요청입니다.");
         }
-        return "redirect:/api/products";
+        return ResponseEntity.ok("/api/products");
     }
 }
